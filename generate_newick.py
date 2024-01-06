@@ -78,7 +78,7 @@ def generate_sim_matrix(amplicon_dict: dict[set]) -> list[list[int]]:
                 score = score1 if score1 > score2 else score2
                 # sim_matrix[ind1][ind2] = score
                 #normalize the scores
-                sim_matrix[ind1][ind2] = round(score / max(len(seq1), len(seq2)), 2)
+                sim_matrix[ind1][ind2] = round(score / max(len(seq1), len(seq2)), 3)
                 # sim_matrix[ind1][ind2] = max(len(seq1), len(seq2))*match - score
                 # break
         # break
@@ -109,6 +109,7 @@ def finding_clusters(sim_matrix: list[list[float]]):
         max_indices = np.argwhere(np_sim_matrix == np_sim_matrix.max())
         max_value = np_sim_matrix[max_indices[0,0]][max_indices[0,1]]
         modified_sim = [] #np.empty(len(np_sim_matrix)-1)
+        print(max_indices)
         print(max_value)
         # for the row and col containing max value, calculate the average for every other row and col
         for max_ind_pair in max_indices[::2]:
@@ -118,16 +119,18 @@ def finding_clusters(sim_matrix: list[list[float]]):
                 if i == max_ind_pair[0] or i == max_ind_pair[1]:
                     continue
                 else:
-                    modified_sim.append(round((np_sim_matrix[max_ind_pair[0]][i-1] + np_sim_matrix[max_ind_pair[1]][i-1]) / 2, 2))
+                    modified_sim.append(round((np_sim_matrix[max_ind_pair[0]][i-1] + np_sim_matrix[max_ind_pair[1]][i-1]) / 2, 3))
             # modified_sim[max_ind_pair[0]] = 0.00
-            print(modified_sim)
+            # print(modified_sim)
         # for row in range(len(np_sim_matrix)-1):
         #     for col in range(len(np_sim_matrix)):
         # reduced_sim_matrix = np.zeros((len(np_sim_matrix)-1, len(np_sim_matrix)-1))
             np_modified_sim = np.array(modified_sim)
+            np_modified_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
+            print(np_modified_sim)
             
-            np_mod_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
-            print(np_mod_sim)
+            # np_mod_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
+            # print(np_mod_sim)
             row_col_to_del = max_ind_pair
             # np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[0]:row_col_to_del[1]:], 0)
             # np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[0]:row_col_to_del[1]:], 1)
@@ -137,17 +140,22 @@ def finding_clusters(sim_matrix: list[list[float]]):
             # np_sim_matrix2 = np.insert(np_sim_matrix1, np.s_[row_col_to_del[0]], np_mod_sim, axis = 1)
             # # np_sim_matrix[:, row_col_to_del[0]:row_col_to_del[1] + 1]
             print(np_sim_matrix)
+            
+            #replace values in max index[0] with np_mod_sim
+            np_sim_matrix[row_col_to_del[0], : ] = np_modified_sim[:]
+            np_sim_matrix[:, row_col_to_del[0]] = np_modified_sim.T[:]
+            # np_sim_matrix = np.insert(np_sim_matrix, row_col_to_del[0], np_modified_sim[:], axis = 0)
+            # np_sim_matrix = np.insert(np_sim_matrix.T, row_col_to_del[0], np_modified_sim[:], axis = 0)
 
-            np_sim_matrix[row_col_to_del[0], : ] = np_mod_sim[:]
-            np_sim_matrix[:, row_col_to_del[0]] = np_mod_sim.T[:]
+
             # np_sim_matrix[:, row_col_to_del[0]:row_col_to_del[1] + 1] = np_modified_sim[:-1, np.newaxis]
-            # print(np_sim_matrix)
+            print(np_sim_matrix)
 
             #generate newick string
             org_list[max_ind_pair[0]] = '(' + org_list[max_ind_pair[0]] + ":" + str(max_avg) + "," + org_list[max_ind_pair[1]] + ":" + str(max_avg) + ')'
             del org_list[max_ind_pair[1]]
             print(org_list)
-        # break
+        
 
 
 
