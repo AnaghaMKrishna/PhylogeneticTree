@@ -54,11 +54,11 @@ def call_ispcr() -> dict[set]:
 
     return amplicon_dict  
 
-def generate_sim_matrix(amplicon_dict: dict[set]) -> list[list[int]]:
+def generate_sim_matrix(amplicon_dict: dict[set]) -> tuple[list[list[int]], list[str]]:
     #TD:add decorator to deal with multiple amplicons for same organism
     #Initialize similarity matrix with 0s
     sim_matrix = [[0 for _ in range(len(amplicon_dict))] for _ in range(len(amplicon_dict))]
-
+    org_list = list(amplicon_dict.keys())
     # print(type(amplicon_dict.keys()))
     #align every organism's amplicon with every other to get the similarity score and fill the matrix
     for ind1, org1 in enumerate(amplicon_dict.keys()):
@@ -84,7 +84,8 @@ def generate_sim_matrix(amplicon_dict: dict[set]) -> list[list[int]]:
         # break
     # for i in sim_matrix:
     #     print(i)
-    return sim_matrix
+
+    return (sim_matrix, org_list)
 
 def normalize_score(sim_matrix: list[list[float]]) ->list[list[float]]:
     #TD: calculate proper normal score
@@ -96,74 +97,74 @@ def normalize_score(sim_matrix: list[list[float]]) ->list[list[float]]:
     print(repr(sim_matrix))
     return sim_matrix
 
-def finding_clusters(sim_matrix: list[list[float]]):
+def finding_clusters(sim_matrix: list[list[float]], org_list: list[str]):
     # sim_matrix = [[0.0, 1.48, 1.58, 0.0, 0.03, 0.02, 1.59, 0.72, 0.08, 0.09], [1.48, 0.0, 1.53, 0.11, 0.13, 0.17, 1.3, 0.72, 0.14, 0.14], [1.58, 1.53, 0.0, -0.06, 0.08, 0.08, 1.58, 0.83, 0.11, 0.04], [0.0, 0.11, -0.06, 0.0, 0.77, 0.91, -0.19, -0.06, 0.68, 1.56], [0.03, 0.13, 0.08, 0.77, 0.0, 2.16, 0.04, 0.19, 1.28, 0.75], [0.02, 0.17, 0.08, 0.91, 2.16, 0.0, 0.04, 0.16, 1.48, 0.84], [1.59, 1.3, 1.58, -0.19, 0.04, 0.04, 0.0, 0.89, 0.12, 0.01], [0.72, 0.72, 0.83, -0.06, 0.19, 0.16, 0.89, 0.0, 0.14, -0.04], [0.08, 0.14, 0.11, 0.68, 1.28, 1.48, 0.12, 0.14, 0.0, 0.8], [0.09, 0.14, 0.04, 1.56, 0.75, 0.84, 0.01, -0.04, 0.8, 0.0]]
-    org_list = ["Pseudomonas_aeruginosa_UCBPP-PA14", "Mycobacterium_tuberculosis_H37Rv", "Staphylococcus_aureus_NCTC_8325", "Sulfolobus_islandicus_M", "Vibrio_cholerae_N16961", "Escherichia_coli_K12", "Wolbachia", "Ferroplasma_acidiphilum_Y", "Treponema_phagedenis_strain_B43", "Nitrososphaera_viennensis_EN76"]
+    # org_list = ["Pseudomonas_aeruginosa_UCBPP-PA14", "Mycobacterium_tuberculosis_H37Rv", "Staphylococcus_aureus_NCTC_8325", "Sulfolobus_islandicus_M", "Vibrio_cholerae_N16961", "Escherichia_coli_K12", "Wolbachia", "Ferroplasma_acidiphilum_Y", "Treponema_phagedenis_strain_B43", "Nitrososphaera_viennensis_EN76"]
     np_sim_matrix = np.array(sim_matrix)
-    for i in sim_matrix:
-        print(i)
+    # for i in sim_matrix:
+    #     print(i)
     # print(max_ind[0])
     # print(np_sim_matrix[max_ind[0,0],max_ind[0,1]])
     while len(np_sim_matrix) > 1:
-        print(np_sim_matrix)
-        max_indices = np.argwhere(np_sim_matrix == np_sim_matrix.max())
-        max_value = np_sim_matrix[max_indices[0,0]][max_indices[0,1]]
+        # print(np_sim_matrix)
+        max_ind_pair = np.argwhere(np_sim_matrix == np_sim_matrix.max())[0]
+        max_value = np_sim_matrix[max_ind_pair[0]][max_ind_pair[1]]
         modified_sim = [] #np.empty(len(np_sim_matrix)-1)
-        print(max_indices)
-        print(max_value)
+        # print(max_indices)
+        # print(max_value)
         # for the row and col containing max value, calculate the average for every other row and col
-        for max_ind_pair in max_indices[::2]:
-            max_avg = max_value / 2
-            print(max_ind_pair)
-            for i in range(len(np_sim_matrix)):
-                if i == max_ind_pair[0] or i == max_ind_pair[1]:
-                    continue
-                else:
-                    modified_sim.append(round((np_sim_matrix[max_ind_pair[0]][i-1] + np_sim_matrix[max_ind_pair[1]][i-1]) / 2, 3))
-            # modified_sim[max_ind_pair[0]] = 0.00
-            # print(modified_sim)
-        # for row in range(len(np_sim_matrix)-1):
-        #     for col in range(len(np_sim_matrix)):
-        # reduced_sim_matrix = np.zeros((len(np_sim_matrix)-1, len(np_sim_matrix)-1))
-            np_modified_sim = np.array(modified_sim)
-            np_modified_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
-            print(np_modified_sim)
-            
-            # np_mod_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
-            # print(np_mod_sim)
-            row_col_to_del = max_ind_pair
-            # np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[0]:row_col_to_del[1]:], 0)
-            # np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[0]:row_col_to_del[1]:], 1)
-            np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[1]], 0)
-            np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[1]], 1)
-            # np_sim_matrix1 = np.insert(np_sim_matrix, np.s_[row_col_to_del[0]], np_mod_sim, axis = 0)
-            # np_sim_matrix2 = np.insert(np_sim_matrix1, np.s_[row_col_to_del[0]], np_mod_sim, axis = 1)
-            # # np_sim_matrix[:, row_col_to_del[0]:row_col_to_del[1] + 1]
-            print(np_sim_matrix)
-            
-            #replace values in max index[0] with np_mod_sim
-            np_sim_matrix[row_col_to_del[0], : ] = np_modified_sim[:]
-            np_sim_matrix[:, row_col_to_del[0]] = np_modified_sim.T[:]
-            # np_sim_matrix = np.insert(np_sim_matrix, row_col_to_del[0], np_modified_sim[:], axis = 0)
-            # np_sim_matrix = np.insert(np_sim_matrix.T, row_col_to_del[0], np_modified_sim[:], axis = 0)
+        # for max_ind_pair in max_indices[::2]:
+        max_avg = max_value / 2
+        # print(max_ind_pair)
+        for i in range(0, len(np_sim_matrix)):
+            if i == max_ind_pair[0] or i == max_ind_pair[1]:
+                continue
+            else:
+                modified_sim.append(round((np_sim_matrix[max_ind_pair[0]][i] + np_sim_matrix[max_ind_pair[1]][i]) / 2, 3))
+        # modified_sim[max_ind_pair[0]] = 0.00
+        # print(modified_sim)
+    # for row in range(len(np_sim_matrix)-1):
+    #     for col in range(len(np_sim_matrix)):
+    # reduced_sim_matrix = np.zeros((len(np_sim_matrix)-1, len(np_sim_matrix)-1))
+        np_modified_sim = np.array(modified_sim)
+        np_modified_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
+        # print(np_modified_sim)
+        
+        # np_mod_sim = np.insert(np_modified_sim, max_ind_pair[0], 0.0)
+        # print(np_mod_sim)
+        row_col_to_del = max_ind_pair
+        # np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[0]:row_col_to_del[1]:], 0)
+        # np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[0]:row_col_to_del[1]:], 1)
+        np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[1]], 0)
+        np_sim_matrix = np.delete(np_sim_matrix, np.s_[row_col_to_del[1]], 1)
+        # np_sim_matrix1 = np.insert(np_sim_matrix, np.s_[row_col_to_del[0]], np_mod_sim, axis = 0)
+        # np_sim_matrix2 = np.insert(np_sim_matrix1, np.s_[row_col_to_del[0]], np_mod_sim, axis = 1)
+        # # np_sim_matrix[:, row_col_to_del[0]:row_col_to_del[1] + 1]
+        # print(np_sim_matrix)
+        
+        #replace values in max index[0] with np_mod_sim
+        np_sim_matrix[row_col_to_del[0], : ] = np_modified_sim[:]
+        np_sim_matrix[:, row_col_to_del[0]] = np_modified_sim.T[:]
+        # np_sim_matrix = np.insert(np_sim_matrix, row_col_to_del[0], np_modified_sim[:], axis = 0)
+        # np_sim_matrix = np.insert(np_sim_matrix.T, row_col_to_del[0], np_modified_sim[:], axis = 0)
 
 
-            # np_sim_matrix[:, row_col_to_del[0]:row_col_to_del[1] + 1] = np_modified_sim[:-1, np.newaxis]
-            print(np_sim_matrix)
+        # np_sim_matrix[:, row_col_to_del[0]:row_col_to_del[1] + 1] = np_modified_sim[:-1, np.newaxis]
+        # print(np_sim_matrix)
 
-            #generate newick string
-            org_list[max_ind_pair[0]] = '(' + org_list[max_ind_pair[0]] + ":" + str(max_avg) + "," + org_list[max_ind_pair[1]] + ":" + str(max_avg) + ')'
-            del org_list[max_ind_pair[1]]
-            print(org_list)
+        #generate newick string
+        org_list[max_ind_pair[0]] = '(' + org_list[max_ind_pair[0]] + ":" + str(max_avg) + "," + org_list[max_ind_pair[1]] + ":" + str(max_avg) + ')'
+        del org_list[max_ind_pair[1]]
+    print(org_list)
         
 
 
 
 if __name__ == "__main__":
     amplicon_dict = call_ispcr()
-    norm_sim_matrix = generate_sim_matrix(amplicon_dict)
+    norm_sim_matrix, org_list = generate_sim_matrix(amplicon_dict)
     # norm_sim_matrix = normalize_score(sim_matrix)
-    finding_clusters(norm_sim_matrix)
+    finding_clusters(norm_sim_matrix, org_list)
 
 
 
