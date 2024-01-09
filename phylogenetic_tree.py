@@ -15,9 +15,10 @@ amplicon_dict = {}
 #Find amplicons using isPCR for each assembly file and store them in dictionary
 for assembly_file in os.listdir(assembly_dir):
     assembly_path = os.path.join(assembly_dir, assembly_file)
+    org_name = assembly_file[:assembly_file.index(".")]
     amplicon_list.extend(upgma.ispcr(primer_path, assembly_path, MAX_AMPLICON_SIZE).split("\n"))
     #skip over the header lines and add sequences into a set to remove duplicate amplicons
-    amplicon_dict[assembly_file[:assembly_file.index(".")]] = list({seq for seq in amplicon_list[1::2]})
+    amplicon_dict[org_name] = list({seq for seq in amplicon_list[1::2]})
     amplicon_list.clear() #empty the list before next iteration
 
 #uncomment to print amplicons for each organism

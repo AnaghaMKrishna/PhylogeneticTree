@@ -53,7 +53,7 @@ def generate_dist_matrix(amplicon_dict: dict[list[str]]) -> tuple[np.ndarray, li
                     dissim_score = 1.000
                     dist_matrix[idx1, idx2] = dissim_score
         
-                #when one of the amplicons are empty str
+                #when one of the amplicons is empty str
                 elif len(amplicon_dict[org1]) == 0 or len(amplicon_dict[org2]) == 0:
                     score = len(amplicon_dict[org1])*GAP if len(amplicon_dict[org1]) > 0 else len(amplicon_dict[org2])*GAP
                     #invert similarity score to get dissimilarity score and normalize
@@ -62,9 +62,6 @@ def generate_dist_matrix(amplicon_dict: dict[list[str]]) -> tuple[np.ndarray, li
                     
                 #when both amplicons are not empty
                 else:
-                    # seq1 = next(iter(amplicon_dict[org1]))
-                    # seq2 = next(iter(amplicon_dict[org2]))
-                    
                     #choose the first amplicon from the list
                     seq1 = amplicon_dict[org1][0]
                     seq2 = amplicon_dict[org2][0]
@@ -75,6 +72,7 @@ def generate_dist_matrix(amplicon_dict: dict[list[str]]) -> tuple[np.ndarray, li
                     #select max score 
                     score = score1 if score1 > score2 else score2
                     
+                    #use similarity score and normalize
                     # dist_matrix[idx1, idx2] = score
                     # dist_matrix[idx1, idx2] = np.round(score / max(len(seq1), len(seq2)), 3)
 

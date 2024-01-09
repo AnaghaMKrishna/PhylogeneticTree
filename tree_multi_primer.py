@@ -25,7 +25,7 @@ for primer_file in os.listdir(primer_dir):
         org_name = assembly_file[:assembly_file.index(".")]
         amplicon_list.extend(upgma.ispcr(primer_path, assembly_path, MAX_AMPLICON_SIZE).split("\n"))
         #skip over the header lines and add sequences into a set to remove duplicate amplicons
-        org_dict[org_name] = list({amp for amp in amplicon_list[1::2]})
+        org_dict[org_name] = list({ampl for ampl in amplicon_list[1::2]})
         amplicon_list.clear() #clear list before next iteration
 
     #for each primer, add primer name as key and value as dict containing organism and resp. amplicons
