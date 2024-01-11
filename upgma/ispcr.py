@@ -2,7 +2,7 @@
 
 import subprocess
 
-PCT_MATCH = 80.00
+PCT_MATCH = 70.00
 
 def ispcr(primer_file: str, assembly_file: str, max_amplicon_size: int) -> str:
     """
@@ -102,7 +102,10 @@ def filter_blast(blast_output:str) -> list[list[str]]:
     Returns:
         list of sorted list of blast hits with match percent above PCT_MATCH
     """
-    filtered_blast_output = subprocess.run("awk '{if ($3 >= PCT_MATCH && $4 == $13 ) print $0;}' | sort -k 9,10n", \
+    #$3 - percent macth identity
+    #$4 - match length
+    #$13 - query length
+    filtered_blast_output = subprocess.run("awk '{if ($3 >= PCT_MATCH && $4 > 0.8*$13) print $0;}' | sort -k 9,10n", \
                                            capture_output=True, \
                                            text=True, \
                                            shell=True, \
@@ -110,7 +113,7 @@ def filter_blast(blast_output:str) -> list[list[str]]:
                                            )
     blast_output_list = filtered_blast_output.stdout.split('\n')
     blast_output_fields = [i.split('\t') for i in blast_output_list[:-1]] #exclude last entry to get rid of unwanted newline
-    
+
     return blast_output_fields
 
 def find_amplicon_pairs(sorted_hits: list[list[str]], max_amplicon_size: int, paired_hits: list) -> list[tuple[list[str]]]:
@@ -127,6 +130,9 @@ def find_amplicon_pairs(sorted_hits: list[list[str]], max_amplicon_size: int, pa
     Returns:
         list of tuples with blast hit pairs which satisfy the condition of orientation and size
     """
+    #primer[1] - query seqID
+    #primer[0] - subject seqID
+    #primer[8] and [9] - matched start and end position
     for primer1 in sorted_hits:
         for primer2 in sorted_hits:
             valid_amplicon_pair = ()            
@@ -142,8 +148,6 @@ def find_amplicon_pairs(sorted_hits: list[list[str]], max_amplicon_size: int, pa
                         paired_hits.append(valid_amplicon_pair)
 
     return paired_hits
-
-
 
 def create_bed_file(hit_pairs: list[tuple[list[str]]]) -> str:
     """
