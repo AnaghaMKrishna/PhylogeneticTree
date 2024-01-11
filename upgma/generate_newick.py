@@ -37,6 +37,12 @@ def generate_dist_matrix(amplicon_dict: dict[list[str]]) -> tuple[np.ndarray, li
     """
     #initialize similarity matrix with arbitrary big value
     dist_matrix = np.full((len(amplicon_dict), len(amplicon_dict)), 100.0)
+    
+    #can also normalize using maximum length across all amplicons
+    # max_len = -1
+    # for lists in amplicon_dict.values():
+    #     leng = max([len(ampl) for ampl in lists]) 
+    #     max_len = leng if leng > max_len else max_len
 
     #list with names of all organisms
     org_list = list(amplicon_dict.keys())
@@ -59,7 +65,7 @@ def generate_dist_matrix(amplicon_dict: dict[list[str]]) -> tuple[np.ndarray, li
                     #invert similarity score to get dissimilarity score and normalize
                     dissim_score = max(len(seq1), len(seq2))*MATCH - score
                     dist_matrix[idx1, idx2] = np.round(dissim_score / max(len(seq1), len(seq2)), 3)
-                    
+
                 #when both amplicons are not empty
                 else:
                     #choose the first amplicon from the list
@@ -71,10 +77,6 @@ def generate_dist_matrix(amplicon_dict: dict[list[str]]) -> tuple[np.ndarray, li
                     _, score2 = upgma.needleman_wunsch(seq1, reverse_complement(seq2), MATCH, MISMATCH, GAP)
                     #select max score 
                     score = score1 if score1 > score2 else score2
-                    
-                    #use similarity score and normalize
-                    # dist_matrix[idx1, idx2] = score
-                    # dist_matrix[idx1, idx2] = np.round(score / max(len(seq1), len(seq2)), 3)
 
                     #invert similarity score to get dissimilarity score and normalize
                     dissim_score = max(len(seq1), len(seq2))*MATCH - score
