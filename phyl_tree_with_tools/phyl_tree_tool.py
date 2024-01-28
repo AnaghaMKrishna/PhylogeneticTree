@@ -46,7 +46,7 @@ def single_locus(primer_path: str, assembly_dir:str) -> str:
 
     #perform MSA and generate newick tree
     aligned_file = msa("amplicons.fna", "aligned_ampl.efa")
-    newick_str = newick_tree(aligned_file, "newick_tree.txt")
+    newick_str = newick_tree(aligned_file)
 
     return newick_str
 
@@ -115,11 +115,21 @@ def multi_loci(primer_dir_multi: str, assembly_dir_multi:str) -> str:
             fout.write("\n")
 
     #generate newick string
-    newick_str = newick_tree("concat_aligned_ampl.efa", "concat_newick_tree.txt")
+    newick_str = newick_tree("concat_aligned_ampl.efa")
     
     return newick_str
 
 def msa(amplicon_file: str, out_file: str) -> str:
+    """
+    perform multi-sequence alignment using Muscle
+
+    Args:
+        amplicon_file: input multi-fasta file
+        out_file: output aligned sequences file
+
+    Returns:
+        output file name
+    """
     muscle_out = subprocess.run([f"muscle -align {amplicon_file} -output {out_file}"], \
                    capture_output=True, \
                    text=True, \
@@ -128,7 +138,16 @@ def msa(amplicon_file: str, out_file: str) -> str:
                   )
     return out_file
 
-def newick_tree(aligned_file: str, out_file:str) -> str:
+def newick_tree(aligned_file: str) -> str:
+    """
+    generate mamximum-likelihood tree using FastTree
+
+    Args:
+        aligned_file: input multi-fasta file with aligned sequences
+
+    Returns:
+        newick representation of phylogenetic tree
+    """
     newick_str = subprocess.run([f"FastTree -nt {aligned_file}"],
                     capture_output=True, \
                     text=True, \
@@ -351,8 +370,8 @@ def reverse_complement(string:str) -> str:
 
 if __name__ == "__main__":
     tree = single_locus(primer_path, assembly_dir)
-    print(tree)
+    print(f"Single Locus\n{tree}\n")
     multi_tree = multi_loci(primer_dir_multi, assembly_dir_multi)
-    print(multi_tree)
+    print(f"Multiple Loci\n{multi_tree}\n")
 
     
