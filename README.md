@@ -5,4 +5,4 @@ Create a phylogenetic tree that represents evolutionary relationships among orga
 
 **tree_multi_primer.py** extends the above implementation by considering multiple loci, thus providing higher resolution, for evaluating relatedness among organisms. 
 
-**phyl_tree_with_tools/phyl_tree_tool.py** generates phylogenetic tree in newick format considering single locus and multiple loci using Muscle for Multi-Sequence Alignment(MSA) and FastTree for clustering.
+**phyl_tree_with_tools/phyl_tree_tool.py** creates phylogenetic tree in newick format considering both single locus and multiple loci using Muscle for Multi-Sequence Alignment(MSA) and FastTree for generating maximum-likelihood tree.
